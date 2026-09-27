@@ -45,20 +45,6 @@
   button, input, select, textarea { font: inherit; color: inherit; }
   button { cursor: pointer; }
   img { display: block; max-width: 100%; }
-  .wash {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .wash i {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(28px);
-  }
-  .wash .a { width: 280px; height: 280px; background: rgba(12, 35, 64, 0.16); top: -70px; right: -80px; }
-  .wash .c { width: 260px; height: 260px; background: rgba(255, 255, 255, 0.85); bottom: 40px; right: -70px; }
   .app {
     position: relative;
     z-index: 1;
@@ -366,7 +352,6 @@
 </style>
 </head>
 <body>
-<div class="wash" aria-hidden="true"><i class="a"></i><i class="c"></i></div>
 <div class="app">
   <header>
     <div class="brand">
