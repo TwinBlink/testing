@@ -555,6 +555,7 @@
     let intPart = dot === -1 ? s : s.slice(0, dot);
     const frac = dot === -1 ? null : s.slice(dot + 1).replace(/\./g, "").slice(0, 2);
     intPart = intPart.replace(/^0+(?=\d)/, "");
+    if (frac == null && (intPart === "" || intPart === "0")) return "";
     if (intPart === "") intPart = "0";
     const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return frac == null ? grouped : grouped + "." + frac;
@@ -586,6 +587,17 @@
     };
     apply();
     requestAnimationFrame(apply);
+  }
+
+  function snapCaretEnd(el) {
+    const apply = () => {
+      if (document.activeElement !== el) return;
+      const end = el.value.length;
+      try { el.setSelectionRange(end, end); } catch (err) {}
+    };
+    apply();
+    setTimeout(apply, 0);
+    setTimeout(apply, 50);
   }
 
   function groupLive(el) {
@@ -1077,23 +1089,29 @@
     document.body.classList.add("kb");
     if (isMoney(t)) {
       const next = toEditing(t.value);
-      if (next !== t.value) {
-        const sig = sigCount(String(t.value).slice(0, t.selectionStart || 0));
-        t.value = next;
-        placeCaret(t, caretFromSig(next, sig));
-      }
+      if (next !== t.value) t.value = next;
+      snapCaretEnd(t);
     }
     setTimeout(() => t.scrollIntoView({ block: "center", inline: "nearest" }), 280);
   });
 
+  document.addEventListener("pointerup", (e) => {
+    const t = e.target;
+    if (!t || !t.closest) return;
+    const wrap = t.closest(".money, .box");
+    const input = t.matches && t.matches("input") && isMoney(t)
+      ? t
+      : (wrap ? wrap.querySelector("input") : null);
+    if (!isMoney(input) || document.activeElement !== input) return;
+    snapCaretEnd(input);
+  }, true);
+
   document.body.addEventListener("focusout", (e) => {
     const t = e.target;
-    if (isMoney(t) && String(t.value).trim() !== "") {
+    if (isMoney(t)) {
       const shown = parseMoney(t.value);
-      if (shown != null) {
-        t.value = formatInput(shown);
-        t.defaultValue = t.value;
-      }
+      t.value = shown == null || shown === 0 ? "" : formatInput(shown);
+      t.defaultValue = t.value;
     }
     if (t.matches && t.matches("[data-id]")) {
       if (t.value.trim() === "") delete overrides[t.dataset.id];
@@ -1224,10 +1242,14 @@
 
     function typeInto(el, text) {
       el.focus();
+      el.dispatchEvent(new KeyboardEvent("keydown", { key: "Unidentified", bubbles: true }));
       el.value = "";
+      try { el.setSelectionRange(0, 0); } catch (err) {}
       el.dispatchEvent(new Event("input", { bubbles: true }));
       for (let i = 0; i < text.length; i++) {
-        el.value = el.value + text.charAt(i);
+        const ch = text.charAt(i);
+        el.dispatchEvent(new KeyboardEvent("keydown", { key: ch, bubbles: true }));
+        el.value = el.value + ch;
         try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
         el.dispatchEvent(new Event("input", { bubbles: true }));
       }
@@ -1247,8 +1269,16 @@
     try { price.setSelectionRange(2, 2); } catch (err) {}
     price.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true }));
     const backValue = price.value;
+    typeInto(price, "500000");
+    price.blur();
+    const beforePress = price.value;
+    price.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    price.focus();
+    const caretValue = price.value;
+    const caretPos = price.selectionStart;
+    const caretOk = beforePress === "500,000.00" && caretValue === "500,000" && caretPos === caretValue.length;
 
-    const groupOk = liveValue === "2,500,000" && blurValue === "2,500,000.00" && spaValue === "15,000" && backValue === "0";
+    const groupOk = liveValue === "2,500,000" && blurValue === "2,500,000.00" && spaValue === "15,000" && backValue === "" && caretOk;
     const today = new Date();
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const expectedName = "Quotation - " + String(today.getDate()).padStart(2, "0") + " " + months[today.getMonth()] + " " + today.getFullYear() + ".pdf";
@@ -1283,7 +1313,9 @@
     const beforePrice = price.value;
     const beforeLoan = loanAmount.value;
     const beforeGrand = $("grand").textContent;
-    const shaped = beforePrice === "500,000.00" && beforeLoan === "200,000.00" && beforeGrand !== "RM 2,290.00" && $("buyerBlock").hidden === false;
+    const shapedParty = party();
+    const shapedHidden = $("buyerBlock").hidden;
+    const shaped = beforePrice === "500,000.00" && beforeLoan === "200,000.00" && beforeGrand !== "RM 2,290.00" && shapedHidden === false;
     wipeLikeIOS();
     const wiped = price.value === "" && loanAmount.value === "" && clientName.value === "" && !sst.checked && party() === "vendor" && $("grand").textContent === beforeGrand;
     restoreSnapshot();
@@ -1306,8 +1338,9 @@
 
     document.title = emptyOk && grandOk && feeOk && rows === 15 && q.price == null && q.grandInc === 2290 && groupOk && nameOk && keepOk
       ? "SELFTEST PASS " + fileName()
-      : "SELFTEST FAIL live=" + liveValue + " blur=" + blurValue + " spa=" + spaValue + " back=" + backValue + " rows=" + rows + " name=" + fileName()
+      : "SELFTEST FAIL live=" + liveValue + " blur=" + blurValue + " spa=" + spaValue + " back=" + JSON.stringify(backValue) + " caret=" + caretPos + "/" + caretValue + " rows=" + rows + " name=" + fileName()
         + " keep=" + [shaped, wiped, restored, vendorGrand, vendorWiped, vendorBack, resetOk, resetSticks].join("/")
+        + " shaped=" + [beforePrice, beforeLoan, beforeGrand, shapedHidden, shapedParty].join("|")
         + " price=" + price.value + " grand=" + $("grand").textContent;
   } else {
     restoreSnapshot();
