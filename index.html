@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TYP">
+<meta name="theme-color" content="#e7e8ee">
+<meta name="description" content="Estimated legal costs for vendor or purchaser. SRO 2023.">
+<title>TYP Quotation</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<style>
+  :root {
+    --ink: #1c1c1e;
+    --muted: #6e6e73;
+    --blue: #007aff;
+    --navy: #0c2340;
+    --hair: rgba(60, 60, 67, 0.16);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html {
+    height: 100%;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+  }
+  body {
+    margin: 0;
+    min-height: 100%;
+    width: 100%;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
+    color: var(--ink);
+    background: #e7e8ee;
+    font: 16px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-text-size-adjust: 100%;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  img { display: block; max-width: 100%; }
+  .wash {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wash i {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(28px);
+  }
+  .wash .a { width: 280px; height: 280px; background: rgba(12, 35, 64, 0.16); top: -70px; right: -80px; }
+  .wash .b { width: 340px; height: 340px; background: rgba(184, 149, 106, 0.32); top: 220px; left: -140px; }
+  .wash .c { width: 260px; height: 260px; background: rgba(255, 255, 255, 0.85); bottom: 40px; right: -70px; }
+  .app {
+    position: relative;
+    z-index: 1;
+    width: min(440px, 100%);
+    margin: 0 auto;
+    padding: 0 16px calc(132px + var(--safe-b));
+  }
+  header {
+    padding: calc(var(--safe-t) + 36px) 2px 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .brand img {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    flex: none;
+    box-shadow: 0 8px 18px rgba(12, 35, 64, 0.22);
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .brand-text { min-width: 0; flex: 1; }
+  .brand-actions { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+  .linkish {
+    border: 0;
+    background: transparent;
+    color: var(--blue);
+    font-size: 16px;
+    font-weight: 560;
+    min-height: 32px;
+    padding: 0 2px;
+  }
+  .linkish:active { opacity: 0.55; }
+  .glass {
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(28, 32, 48, 0.05);
+    backdrop-filter: blur(22px) saturate(1.7);
+    -webkit-backdrop-filter: blur(22px) saturate(1.7);
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 12px;
+    background: rgba(118, 118, 128, 0.14);
+  }
+  .seg label {
+    position: relative;
+    text-align: center;
+    min-height: 36px;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg label:has(input:checked) {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  }
+  .seg label:has(input:focus-visible) { outline: 2px solid var(--blue); }
+  .field { display: block; margin-top: 14px; min-width: 0; }
+  .lbl {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 560;
+  }
+  .money, .plain, .area, .stepper {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(60, 60, 67, 0.1);
+    min-width: 0;
+  }
+  .money, .plain { padding: 0 12px; gap: 6px; }
+  .money > span, .plain > span { color: var(--muted); font-size: 15px; font-weight: 650; flex: none; }
+  input, textarea, select { min-width: 0; }
+  .money input, .plain input, .stepper input, .area textarea {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 620;
+    padding: 0;
+  }
+  .area { padding: 0 12px; }
+  .area textarea {
+    min-height: 52px;
+    padding: 12px 0;
+    resize: none;
+    line-height: 1.35;
+  }
+  select {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    border: 1px solid rgba(60, 60, 67, 0.1);
+    background: rgba(255, 255, 255, 0.74) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%236e6e73' d='M1 1.5l5 5 5-5' stroke='%236e6e73' stroke-width='1.4' fill='none'/></svg>") right 12px center no-repeat;
+    padding: 0 32px 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stepper { padding: 0; }
+  .stepper button {
+    width: 44px;
+    height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--blue);
+    font-size: 24px;
+    font-weight: 400;
+    flex: none;
+  }
+  .stepper input { text-align: center; font-weight: 650; }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 560;
+  }
+  .switch-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .track {
+    width: 51px;
+    height: 31px;
+    border-radius: 999px;
+    background: #e9e9eb;
+    position: relative;
+    flex: none;
+    transition: background 0.2s ease;
+  }
+  .track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s ease;
+  }
+  .switch-row input:checked + .track { background: #34c759; }
+  .switch-row input:checked + .track::after { transform: translateX(20px); }
+  .switch-row input:focus-visible + .track { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .check {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .check input { width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: var(--navy); }
+  .note { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
+  .note.warn { color: #b45309; }
+  .group {
+    margin: 22px 8px 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .line { padding: 12px 0; border-top: 0.5px solid var(--hair); min-width: 0; }
+  .line:first-child { border-top: 0; padding-top: 4px; }
+  .line-name { font-size: 15px; font-weight: 560; letter-spacing: -0.015em; margin-bottom: 8px; }
+  .num { display: inline-block; min-width: 1.3em; color: #8e8e93; font-weight: 650; }
+  .line-name, .area textarea { overflow-wrap: anywhere; }
+  .line-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 146px;
+    max-width: 58%;
+    flex: none;
+    min-height: 44px;
+    padding: 0 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(60, 60, 67, 0.1);
+  }
+  .box span { color: var(--muted); font-size: 13px; font-weight: 700; }
+  .box input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 640;
+    padding: 0;
+  }
+  .box input::placeholder { color: #c7c7cc; font-weight: 500; }
+  .inc { margin-left: auto; text-align: right; font-size: 15px; font-weight: 680; min-width: 0; overflow-wrap: anywhere; }
+  .inc small { display: block; font-size: 11px; font-weight: 560; color: var(--muted); }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 0.5px solid var(--hair);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .sub { margin: 4px 0 0; text-align: right; color: var(--muted); font-size: 12px; }
+  .dock {
+    position: fixed;
+    z-index: 6;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(440px, calc(100% - 24px));
+    bottom: calc(10px + var(--safe-b));
+    padding: 12px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow: 0 12px 40px rgba(20, 28, 48, 0.12);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  }
+  .dock-total { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 4px 8px; }
+  .dock-total span { color: var(--muted); font-size: 13px; font-weight: 600; }
+  .dock-total strong { font-size: 22px; font-weight: 720; letter-spacing: -0.03em; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .actions button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 650;
+  }
+  .actions button:active { opacity: 0.72; }
+  #saveBtn { background: var(--navy); color: #f6f3ec; }
+  #shareBtn { background: #1f8f4e; color: white; }
+  body.kb .dock { display: none; }
+  body.kb .app { padding-bottom: 24px; }
+  dialog {
+    width: min(400px, calc(100% - 32px));
+    max-height: min(80dvh, 640px);
+    overflow: auto;
+    border: 0;
+    border-radius: 22px;
+    padding: 18px 18px 16px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.38); }
+  dialog h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -0.03em; }
+  dialog p, dialog li { font-size: 14px; line-height: 1.4; }
+  dialog table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 12px; }
+  dialog td { padding: 6px 0; border-bottom: 0.5px solid var(--hair); }
+  dialog td:last-child { text-align: right; font-weight: 650; }
+  dialog .linkish { margin-top: 8px; float: right; }
+  [hidden] { display: none !important; }
+  .toast {
+    position: fixed;
+    z-index: 8;
+    left: 50%;
+    bottom: calc(118px + var(--safe-b));
+    transform: translateX(-50%);
+    width: min(400px, calc(100% - 32px));
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(28, 28, 30, 0.92);
+    color: white;
+    font-size: 14px;
+  }
+  .toast[hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wash" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+<div class="app">
+  <header>
+    <div class="brand">
+      <img src="logo.jpg" alt="TYP">
+      <div class="brand-text">
+        <h1>Quotation</h1>
+        <p>Estimated legal costs</p>
+      </div>
+      <div class="brand-actions">
+        <button type="button" class="linkish" id="ratesBtn">Rates</button>
+        <button type="button" class="linkish" id="resetBtn">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="glass">
+    <div class="seg" role="radiogroup" aria-label="Party">
+      <label><input type="radio" name="party" value="vendor" checked>Vendor</label>
+      <label><input type="radio" name="party" value="purchaser">Purchaser</label>
+    </div>
+
+    <label class="field">
+      <span class="lbl">Purchase price</span>
+      <span class="money"><span>RM</span><input id="price" name="purchase-price" inputmode="decimal" autocomplete="off" enterkeyhint="done"></span>
+    </label>
+
+    <div class="pair">
+      <label class="field">
+        <span class="lbl">Persons</span>
+        <span class="stepper">
+          <button type="button" id="personsMinus" aria-label="Fewer persons">−</button>
+          <input id="persons" name="persons" inputmode="numeric" autocomplete="off" aria-label="Number of persons">
+          <button type="button" id="personsPlus" aria-label="More persons">+</button>
+        </span>
+      </label>
+      <label class="field">
+        <span class="lbl">Discount</span>
+        <select id="discount" name="discount" autocomplete="off" aria-label="Discount on professional fee"></select>
+      </label>
+    </div>
+    <p class="note" id="discountNote">On the sale and purchase fee.</p>
+
+    <label class="switch-row">SST 8% on legal fees
+      <input type="checkbox" id="sst" name="sst" autocomplete="off" aria-label="Add SST at 8 percent on legal fees">
+      <span class="track"></span>
+    </label>
+
+    <div id="buyerBlock" hidden>
+      <label class="field">
+        <span class="lbl">Buyer</span>
+        <select id="buyer" name="buyer" autocomplete="off">
+          <option value="citizen">Malaysian citizen</option>
+          <option value="pr">Permanent resident</option>
+          <option value="foreign-res">Foreigner, residential</option>
+          <option value="foreign-nonres">Foreigner, other property</option>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="firstHome" name="first-home" autocomplete="off">
+        <span>First home for a Malaysian citizen, RM500,000 or below. Transfer and loan stamp duty are nil.</span>
+      </label>
+      <p class="note warn" id="homeNote" hidden></p>
+      <label class="switch-row">Loan
+        <input type="checkbox" id="loanOn" name="loan" autocomplete="off">
+        <span class="track"></span>
+      </label>
+      <div id="loanBox" hidden>
+        <label class="field">
+          <span class="lbl">Loan amount</span>
+          <span class="money"><span>RM</span><input id="loanAmount" name="loan-amount" inputmode="decimal" autocomplete="off" enterkeyhint="done"></span>
+        </label>
+        <p class="note" id="loanHint"></p>
+      </div>
+    </div>
+
+    <label class="field">
+      <span class="lbl">Name</span>
+      <span class="plain"><input id="clientName" name="client-name" autocomplete="off" enterkeyhint="next" placeholder="Optional"></span>
+    </label>
+    <label class="field">
+      <span class="lbl">Property</span>
+      <span class="area"><textarea id="property" name="property" autocomplete="off" rows="2" enterkeyhint="done" placeholder="Optional"></textarea></span>
+    </label>
+  </section>
+
+  <h2 class="group">Legal fees</h2>
+  <section class="glass" id="feeCard">
+    <div id="feeList"></div>
+    <p class="note" id="holdNote" hidden></p>
+    <div id="feeSum"></div>
+  </section>
+
+  <h2 class="group">Disbursement</h2>
+  <section class="glass">
+    <div id="disbList"></div>
+    <div id="disbSum"></div>
+  </section>
+</div>
+
+<div class="dock">
+  <div class="dock-total">
+    <span id="dockLabel">Vendor</span>
+    <strong id="grand">—</strong>
+  </div>
+  <div class="actions">
+    <button type="button" id="saveBtn">Save PDF</button>
+    <button type="button" id="shareBtn">WhatsApp</button>
+  </div>
+</div>
+<p class="toast" id="toast" hidden></p>
+
+<dialog id="rates">
+  <h3>Scale</h3>
+  <p>The sale and purchase fee, and the loan fee, follow the Solicitors’ Remuneration Order 2023, Table A. The minimum is RM500. Above RM7.5 million the fee is shown at 1%.</p>
+  <table>
+    <tr><td>First RM500,000</td><td>1.25%</td></tr>
+    <tr><td>Next RM7,000,000</td><td>1%</td></tr>
+  </table>
+  <p>Discount applies to those two professional fees only.</p>
+  <p>Stamp duty is charged to the purchaser. For a citizen or permanent resident it is 1% on the first RM100,000, 2% on the next RM400,000, 3% on the next RM500,000, and 4% after that. A foreigner pays 8% on residential property and 4% on other property. A loan agreement is 0.5%. Duty is rounded up to the next ringgit.</p>
+  <p>SST at 8% is added to legal fees only, and only while the switch is on. Disbursements stay outside SST.</p>
+  <button type="button" class="linkish" id="closeRates">Close</button>
+</dialog>
+
+<script src="fonts.js"></script>
+<script src="calc.js"></script>
+<script src="pdfquote.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const overrides = {};
+  let loanTouched = false;
+  let toastTimer = 0;
+
+  const price = $("price");
+  const persons = $("persons");
+  const discount = $("discount");
+  const sst = $("sst");
+  const buyer = $("buyer");
+  const firstHome = $("firstHome");
+  const loanOn = $("loanOn");
+  const loanAmount = $("loanAmount");
+  const clientName = $("clientName");
+  const property = $("property");
+
+  for (let p = 0; p <= 80; p += 5) {
+    const opt = document.createElement("option");
+    opt.value = String(p);
+    opt.textContent = p + "%";
+    discount.appendChild(opt);
+  }
+
+  function parseMoney(raw) {
+    if (raw == null) return null;
+    const s = String(raw).replace(/rm/ig, "").replace(/,/g, "").replace(/%/g, "").replace(/\s/g, "").trim();
+    if (s === "" || s === "." || s === "-") return null;
+    const n = Number(s);
+    if (!isFinite(n) || n < 0) return null;
+    return n;
+  }
+
+  function formatInput(n) {
+    if (n == null || !isFinite(Number(n))) return "";
+    return Number(n).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatMoney(n) {
+    if (n == null || !isFinite(Number(n))) return "—";
+    return Number(n).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatRM(n) {
+    if (n == null || !isFinite(Number(n))) return "—";
+    return "RM " + formatMoney(n);
+  }
+
+  function isMoney(el) {
+    return !!(el && el.matches && el.matches("#price, #loanAmount, [data-id]"));
+  }
+
+  function groupMoney(raw) {
+    const s = String(raw == null ? "" : raw).replace(/[^\d.]/g, "");
+    if (s === "") return "";
+    const dot = s.indexOf(".");
+    let intPart = dot === -1 ? s : s.slice(0, dot);
+    const frac = dot === -1 ? null : s.slice(dot + 1).replace(/\./g, "").slice(0, 2);
+    intPart = intPart.replace(/^0+(?=\d)/, "");
+    if (intPart === "") intPart = "0";
+    const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return frac == null ? grouped : grouped + "." + frac;
+  }
+
+  function sigCount(s) {
+    const m = String(s).match(/[\d.]/g);
+    return m ? m.length : 0;
+  }
+
+  function caretFromSig(text, sig) {
+    if (!(sig > 0)) return 0;
+    let seen = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (/[\d.]/.test(text.charAt(i))) {
+        seen++;
+        if (seen === sig) return i + 1;
+      }
+    }
+    return text.length;
+  }
+
+  function placeCaret(el, pos) {
+    el.dataset.caret = String(pos);
+    const apply = () => {
+      if (document.activeElement !== el) return;
+      const p = Number(el.dataset.caret);
+      try { el.setSelectionRange(p, p); } catch (err) {}
+    };
+    apply();
+    requestAnimationFrame(apply);
+  }
+
+  function groupLive(el) {
+    const caret = el.selectionStart;
+    const sig = sigCount(el.value.slice(0, caret == null ? el.value.length : caret));
+    const formatted = groupMoney(el.value);
+    if (el.value !== formatted) el.value = formatted;
+    if (caret != null) placeCaret(el, caretFromSig(formatted, sig));
+  }
+
+  function toEditing(raw) {
+    const n = parseMoney(raw);
+    if (n == null) return "";
+    const cents = Math.round(n * 100);
+    if (cents % 100 === 0) return groupMoney(String(cents / 100));
+    return formatInput(n);
+  }
+
+  function party() {
+    const picked = document.querySelector('input[name="party"]:checked');
+    return picked ? picked.value : "vendor";
+  }
+
+  function payload(ov) {
+    const who = party();
+    const personsRaw = parseMoney(persons.value);
+    const input = {
+      party: who,
+      price: parseMoney(price.value),
+      persons: personsRaw == null ? 1 : personsRaw,
+      discountPct: Number(discount.value) || 0,
+      sst: sst.checked,
+      buyer: buyer.value,
+      firstHome: firstHome.checked && buyer.value === "citizen",
+      loanOn: who === "purchaser" && loanOn.checked,
+      overrides: ov || overrides
+    };
+    if (input.loanOn && loanTouched) {
+      const n = parseMoney(loanAmount.value);
+      input.loanAmount = n == null ? 0 : n;
+    }
+    return input;
+  }
+
+  function setIfIdle(el, text) {
+    if (document.activeElement === el) return;
+    if (el.value !== text) el.value = text;
+    if (el.defaultValue !== el.value) el.defaultValue = el.value;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function fillList(container, rows) {
+    const key = rows.map((row) => row.id).join("|");
+    if (container.dataset.key !== key) {
+      container.dataset.key = key;
+      container.innerHTML = rows.map((row, i) => (
+        '<div class="line">' +
+          '<div class="line-name"><span class="num">' + (i + 1) + '</span>' + esc(row.label) + '</div>' +
+          '<div class="line-row">' +
+            '<label class="box"><span>RM</span>' +
+              '<input data-id="' + row.id + '" name="' + row.id + '" inputmode="decimal" autocomplete="off" aria-label="' + esc(row.label) + '" placeholder="—">' +
+            '</label>' +
+            '<div class="inc" data-inc="' + row.id + '"></div>' +
+          '</div>' +
+        '</div>'
+      )).join("");
+    }
+    rows.forEach((row) => {
+      const input = container.querySelector('input[data-id="' + row.id + '"]');
+      if (input && document.activeElement !== input) {
+        const next = row.excl == null ? "" : formatInput(row.excl);
+        if (input.value !== next) input.value = next;
+        if (input.defaultValue !== input.value) input.defaultValue = input.value;
+      }
+      const inc = container.querySelector('[data-inc="' + row.id + '"]');
+      if (!inc) return;
+      const sstLine = row.sst != null && row.sst !== 0
+        ? '<small>SST ' + formatMoney(row.sst) + '</small>'
+        : '';
+      inc.innerHTML = sstLine + formatMoney(row.inc);
+    });
+  }
+
+  function sumBlock(el, labelExcl, labelInc, sstAmt) {
+    let html = '<div class="total"><span>Total</span><b>' + formatMoney(labelInc) + '</b></div>';
+    if (sst.checked && sstAmt != null) {
+      html += '<p class="sub">Excl. SST ' + formatMoney(labelExcl) + ' · SST ' + formatMoney(sstAmt) + '</p>';
+    }
+    el.innerHTML = html;
+  }
+
+  function paint(q) {
+    const who = q.party === "purchaser";
+    $("buyerBlock").hidden = !who;
+    $("loanBox").hidden = !(who && q.loanOn);
+    $("discountNote").textContent = q.loanOn
+      ? "On the sale and purchase fee and the loan fee."
+      : "On the sale and purchase fee.";
+    $("dockLabel").textContent = who ? "Purchaser" : "Vendor";
+    $("grand").textContent = formatRM(q.grandInc);
+
+    if (!loanTouched && q.loanOn) setIfIdle(loanAmount, q.loanAmount == null ? "" : formatInput(q.loanAmount));
+    $("loanHint").textContent = q.loanOn && !loanTouched ? "90% of the purchase price. Type another amount to replace it." : "";
+
+    const blocked = q.firstHomeBlocked;
+    $("homeNote").hidden = !blocked;
+    $("homeNote").textContent = blocked
+      ? "The exemption is for a Malaysian citizen at RM500,000 or below."
+      : "";
+    firstHome.disabled = buyer.value !== "citizen";
+
+    fillList($("feeList"), q.fees);
+    fillList($("disbList"), q.disb);
+    sumBlock($("feeSum"), q.feeExcl, q.feeInc, q.feeSst);
+    sumBlock($("disbSum"), q.disbExcl, q.disbInc, null);
+
+    let hold = "";
+    if (q.spaMinHeld && !Object.prototype.hasOwnProperty.call(overrides, "spa")) {
+      hold = "Sale and purchase fee is held at the RM500 minimum.";
+    }
+    if (q.loanMinHeld && !Object.prototype.hasOwnProperty.call(overrides, "loanFee")) {
+      hold = (hold ? hold + " " : "") + "Loan fee is held at the RM500 minimum.";
+    }
+    $("holdNote").hidden = !hold;
+    $("holdNote").textContent = hold;
+  }
+
+  const SNAP_KEY = "typ-quotation";
+  const HANDOFF_KEY = "typ-quotation-handoff";
+  let lastSnap = null;
+  let persistReady = false;
+  let human = false;
+  let guardUntil = 0;
+  let guardTimer = 0;
+
+  function snapshot() {
+    return {
+      party: party(),
+      price: price.value,
+      persons: persons.value,
+      discount: discount.value,
+      sst: sst.checked,
+      buyer: buyer.value,
+      firstHome: firstHome.checked,
+      loanOn: loanOn.checked,
+      loanAmount: loanAmount.value,
+      loanTouched: loanTouched,
+      clientName: clientName.value,
+      property: property.value,
+      overrides: Object.assign({}, overrides)
+    };
+  }
+
+  function persistLast() {
+    if (!lastSnap) return;
+    try { sessionStorage.setItem(SNAP_KEY, JSON.stringify(lastSnap)); } catch (err) {}
+  }
+
+  function clearHandoff() {
+    try { sessionStorage.removeItem(HANDOFF_KEY); } catch (err) {}
+  }
+
+  function clearStored() {
+    lastSnap = null;
+    guardUntil = 0;
+    if (guardTimer) {
+      clearTimeout(guardTimer);
+      guardTimer = 0;
+    }
+    try { sessionStorage.removeItem(SNAP_KEY); } catch (err) {}
+    clearHandoff();
+  }
+
+  function handoffPending() {
+    try {
+      const t = Number(sessionStorage.getItem(HANDOFF_KEY) || 0);
+      return t > 0 && Date.now() - t < 12 * 60 * 60 * 1000;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function readSnapshot() {
+    try {
+      const raw = sessionStorage.getItem(SNAP_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === "object") return data;
+      }
+    } catch (err) {}
+    return lastSnap;
+  }
+
+  function pin(el) {
+    if (!el) return;
+    if (el.type === "checkbox" || el.type === "radio") {
+      el.defaultChecked = el.checked;
+      return;
+    }
+    if (el.tagName === "SELECT") {
+      for (let i = 0; i < el.options.length; i++) el.options[i].defaultSelected = el.options[i].selected;
+      return;
+    }
+    el.defaultValue = el.value;
+  }
+
+  function pinForm() {
+    [price, persons, loanAmount, clientName, property, discount, buyer, sst, firstHome, loanOn].forEach(pin);
+    document.querySelectorAll('input[name="party"]').forEach(pin);
+    document.querySelectorAll("input[data-id]").forEach(pin);
+  }
+
+  function payloadFrom(data) {
+    const who = data.party === "purchaser" ? "purchaser" : "vendor";
+    const personsRaw = parseMoney(data.persons);
+    const input = {
+      party: who,
+      price: parseMoney(data.price),
+      persons: personsRaw == null ? 1 : personsRaw,
+      discountPct: Number(data.discount) || 0,
+      sst: !!data.sst,
+      buyer: data.buyer || "citizen",
+      firstHome: !!data.firstHome && (data.buyer || "citizen") === "citizen",
+      loanOn: who === "purchaser" && !!data.loanOn,
+      overrides: data.overrides && typeof data.overrides === "object" ? data.overrides : {}
+    };
+    if (input.loanOn && data.loanTouched) {
+      const n = parseMoney(data.loanAmount);
+      input.loanAmount = n == null ? 0 : n;
+    }
+    return input;
+  }
+
+  function setSelect(el, value) {
+    const v = String(value == null ? "" : value);
+    for (let i = 0; i < el.options.length; i++) {
+      if (el.options[i].value === v) {
+        el.value = v;
+        return;
+      }
+    }
+  }
+
+  // iPhone opens the PDF in this tab. Back keeps the total and clears the inputs.
+  function grandTextFor(data) {
+    return formatRM(FeeCalc.quote(payloadFrom(data)).grandInc);
+  }
+
+  function grandMismatch() {
+    return $("grand").textContent !== formatRM(FeeCalc.quote(payload()).grandInc);
+  }
+
+  function looksLikeFreshForm() {
+    return price.value.trim() === ""
+      && clientName.value.trim() === ""
+      && property.value.trim() === ""
+      && loanAmount.value.trim() === ""
+      && !sst.checked
+      && !firstHome.checked
+      && !loanOn.checked
+      && party() === "vendor"
+      && (discount.value === "0" || discount.value === "")
+      && (persons.value.trim() === "" || persons.value === "1")
+      && !grandMismatch();
+  }
+
+  function shouldRestore(data) {
+    if (human || !data || !snapDiffers(data)) return false;
+    if ($("grand").textContent === grandTextFor(data) && grandMismatch()) return true;
+    if (handoffPending() && looksLikeFreshForm()) return true;
+    return false;
+  }
+
+  function snapDiffers(data) {
+    if (!data) return false;
+    const who = data.party === "purchaser" ? "purchaser" : "vendor";
+    if (party() !== who) return true;
+    const priceNow = parseMoney(price.value);
+    const priceThen = parseMoney(data.price);
+    if (priceNow == null ? priceThen != null : priceThen == null || Math.abs(priceNow - priceThen) > 0.001) return true;
+    const personsThen = data.persons == null || String(data.persons) === "" ? "1" : String(data.persons);
+    if (persons.value !== personsThen) return true;
+    if (discount.value !== String(data.discount == null ? "0" : data.discount)) return true;
+    if (sst.checked !== !!data.sst) return true;
+    if (buyer.value !== String(data.buyer || "citizen")) return true;
+    if (firstHome.checked !== !!data.firstHome) return true;
+    if (loanOn.checked !== !!data.loanOn) return true;
+    const loanNow = parseMoney(loanAmount.value);
+    const loanThen = parseMoney(data.loanAmount);
+    if (loanNow == null ? loanThen != null : loanThen == null || Math.abs(loanNow - loanThen) > 0.001) return true;
+    if (!!loanTouched !== !!data.loanTouched) return true;
+    if (clientName.value !== (data.clientName == null ? "" : String(data.clientName))) return true;
+    if (property.value !== (data.property == null ? "" : String(data.property))) return true;
+    const q = FeeCalc.quote(payloadFrom(data));
+    const rows = q.fees.concat(q.disb);
+    for (let i = 0; i < rows.length; i++) {
+      const input = document.querySelector('input[data-id="' + rows[i].id + '"]');
+      if (!input) return true;
+      if (rows[i].excl == null) {
+        if (input.value.trim() !== "") return true;
+      } else {
+        const shown = parseMoney(input.value);
+        if (shown == null || Math.abs(shown - rows[i].excl) > 0.001) return true;
+      }
+    }
+    return false;
+  }
+
+  function applySnapshot(data) {
+    Object.keys(overrides).forEach((key) => delete overrides[key]);
+    const ov = data.overrides && typeof data.overrides === "object" ? data.overrides : {};
+    Object.keys(ov).forEach((key) => {
+      const n = Number(ov[key]);
+      if (isFinite(n)) overrides[key] = n;
+    });
+    loanTouched = !!data.loanTouched;
+    const who = data.party === "purchaser" ? "purchaser" : "vendor";
+    const partyEl = document.querySelector('input[name="party"][value="' + who + '"]');
+    if (partyEl) partyEl.checked = true;
+    price.value = data.price == null ? "" : String(data.price);
+    persons.value = data.persons == null || String(data.persons) === "" ? "1" : String(data.persons);
+    setSelect(discount, data.discount == null ? "0" : data.discount);
+    sst.checked = !!data.sst;
+    setSelect(buyer, data.buyer || "citizen");
+    firstHome.checked = !!data.firstHome && buyer.value === "citizen";
+    loanOn.checked = !!data.loanOn;
+    loanAmount.value = data.loanAmount == null ? "" : String(data.loanAmount);
+    clientName.value = data.clientName == null ? "" : String(data.clientName);
+    property.value = data.property == null ? "" : String(data.property);
+    recalc();
+  }
+
+  function remember() {
+    pinForm();
+    lastSnap = snapshot();
+    persistLast();
+  }
+
+  function recoverIfNeeded() {
+    const data = readSnapshot();
+    if (!shouldRestore(data)) return false;
+    applySnapshot(data);
+    return true;
+  }
+
+  function restoreSnapshot() {
+    recoverIfNeeded();
+  }
+
+  function armGuard() {
+    guardUntil = Date.now() + 3000;
+    if (guardTimer) return;
+    const tick = () => {
+      recoverIfNeeded();
+      if (Date.now() >= guardUntil) {
+        guardTimer = 0;
+        return;
+      }
+      guardTimer = setTimeout(tick, 100);
+    };
+    guardTimer = setTimeout(tick, 0);
+  }
+
+  function beginHandoff() {
+    human = false;
+    recoverIfNeeded();
+    human = false;
+    remember();
+    try { sessionStorage.setItem(HANDOFF_KEY, String(Date.now())); } catch (err) {}
+    armGuard();
+  }
+
+  function watchReturn() {
+    human = false;
+    armGuard();
+  }
+
+  function recalc() {
+    if (persistReady && recoverIfNeeded()) return;
+    human = false;
+    paint(FeeCalc.quote(payload()));
+    if (persistReady) remember();
+  }
+
+  function currentModel() {
+    const q = FeeCalc.quote(payload());
+    return Object.assign({}, q, {
+      name: clientName.value.trim(),
+      property: property.value.trim()
+    });
+  }
+
+  function fileName() {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, "0");
+    return "Quotation - " + dd + " " + months[now.getMonth()] + " " + now.getFullYear() + ".pdf";
+  }
+
+  function pdfFile() {
+    const model = currentModel();
+    const bytes = QuotePdf.buildQuotePdf(model);
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    return new File([blob], fileName(), { type: "application/pdf" });
+  }
+
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  function downloadNow(file) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.rel = "noopener";
+    // iPhone replaces this page when download is set. A new tab leaves the quotation in place.
+    if (isIOS()) a.target = "_blank";
+    else a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+  }
+
+  function showToast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+
+  document.body.addEventListener("keydown", (e) => {
+    const t = e.target;
+    if (!isMoney(t)) return;
+    if (e.key !== "Backspace" && e.key !== "Delete") return;
+    const start = t.selectionStart;
+    const end = t.selectionEnd;
+    if (start == null || start !== end) return;
+    const v = t.value;
+    let raw = null;
+    let caret = start;
+    if (e.key === "Backspace" && start > 0 && v.charAt(start - 1) === ",") {
+      const cut = start - 2;
+      if (cut < 0) return;
+      raw = v.slice(0, cut) + v.slice(start);
+      caret = cut;
+    } else if (e.key === "Delete" && v.charAt(start) === ",") {
+      raw = v.slice(0, start) + v.slice(start + 2);
+      caret = start;
+    }
+    if (raw == null) return;
+    e.preventDefault();
+    t.value = raw;
+    try { t.setSelectionRange(caret, caret); } catch (err) {}
+    t.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  document.body.addEventListener("input", (e) => {
+    if (document.visibilityState === "hidden") return;
+    if (recoverIfNeeded()) return;
+    const t = e.target;
+    if (isMoney(t)) groupLive(t);
+    if (t.matches && t.matches("[data-id]")) {
+      if (t.value.trim() === "") delete overrides[t.dataset.id];
+      else {
+        const n = parseMoney(t.value);
+        if (n == null) return;
+        overrides[t.dataset.id] = n;
+      }
+      recalc();
+      return;
+    }
+    if (t.id === "loanAmount") loanTouched = t.value.trim() !== "";
+    if (t.matches && t.matches("#price, #persons, #loanAmount, #clientName, #property")) recalc();
+  });
+
+  document.body.addEventListener("focusin", (e) => {
+    const t = e.target;
+    if (!t.matches || !t.matches("input, textarea, select")) return;
+    if (recoverIfNeeded() && !t.isConnected) return;
+    if (!t.matches("input")) return;
+    document.body.classList.add("kb");
+    if (isMoney(t)) {
+      const next = toEditing(t.value);
+      if (next !== t.value) {
+        const sig = sigCount(String(t.value).slice(0, t.selectionStart || 0));
+        t.value = next;
+        placeCaret(t, caretFromSig(next, sig));
+      }
+    }
+    setTimeout(() => t.scrollIntoView({ block: "center", inline: "nearest" }), 280);
+  });
+
+  document.body.addEventListener("focusout", (e) => {
+    const t = e.target;
+    if (isMoney(t) && String(t.value).trim() !== "") {
+      const shown = parseMoney(t.value);
+      if (shown != null) {
+        t.value = formatInput(shown);
+        t.defaultValue = t.value;
+      }
+    }
+    if (t.matches && t.matches("[data-id]")) {
+      if (t.value.trim() === "") delete overrides[t.dataset.id];
+      else {
+        const n = parseMoney(t.value);
+        if (n != null) {
+          const trial = Object.assign({}, overrides);
+          delete trial[t.dataset.id];
+          const q = FeeCalc.quote(payload(trial));
+          const row = q.fees.concat(q.disb).find((item) => item.id === t.dataset.id);
+          if (row && row.excl != null && Math.abs(row.excl - n) < 0.001) delete overrides[t.dataset.id];
+          else overrides[t.dataset.id] = n;
+        }
+      }
+    }
+    if (t.id === "loanAmount" && t.value.trim() === "") loanTouched = false;
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (!a || !a.matches || !a.matches("input, textarea, select")) document.body.classList.remove("kb");
+      if (window.scrollX) window.scrollTo(0, window.scrollY);
+    }, 40);
+    if (document.visibilityState !== "hidden") recalc();
+  });
+
+  document.querySelectorAll('input[name="party"]').forEach((el) => {
+    el.addEventListener("change", recalc);
+  });
+  discount.addEventListener("change", recalc);
+  sst.addEventListener("change", recalc);
+  buyer.addEventListener("change", () => {
+    if (buyer.value !== "citizen") firstHome.checked = false;
+    recalc();
+  });
+  firstHome.addEventListener("change", recalc);
+  loanOn.addEventListener("change", () => {
+    if (!loanOn.checked) loanTouched = false;
+    recalc();
+  });
+
+  $("personsMinus").addEventListener("click", () => {
+    const n = Math.max(1, Math.round(parseMoney(persons.value) || 1) - 1);
+    persons.value = String(n);
+    recalc();
+  });
+  $("personsPlus").addEventListener("click", () => {
+    const n = Math.min(20, Math.round(parseMoney(persons.value) || 1) + 1);
+    persons.value = String(n);
+    recalc();
+  });
+
+  function resetAll() {
+    human = false;
+    clearStored();
+    Object.keys(overrides).forEach((key) => delete overrides[key]);
+    loanTouched = false;
+    document.querySelector('input[name="party"][value="vendor"]').checked = true;
+    price.value = "";
+    persons.value = "1";
+    discount.value = "0";
+    sst.checked = false;
+    buyer.value = "citizen";
+    firstHome.checked = false;
+    firstHome.disabled = false;
+    loanOn.checked = false;
+    loanAmount.value = "";
+    clientName.value = "";
+    property.value = "";
+    $("feeList").dataset.key = "";
+    $("disbList").dataset.key = "";
+    recalc();
+    window.scrollTo(0, 0);
+  }
+
+  $("resetBtn").addEventListener("click", resetAll);
+  $("ratesBtn").addEventListener("click", () => $("rates").showModal());
+  $("closeRates").addEventListener("click", () => $("rates").close());
+
+  $("saveBtn").addEventListener("click", () => {
+    beginHandoff();
+    downloadNow(pdfFile());
+  });
+
+  $("shareBtn").addEventListener("click", async () => {
+    beginHandoff();
+    const file = pdfFile();
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+    try {
+      if (navigator.share) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+    downloadNow(file);
+    showToast("This browser cannot hand the PDF to WhatsApp. It was saved instead.");
+  });
+
+  resetAll();
+  persistReady = true;
+  window.addEventListener("pagehide", persistLast);
+  window.addEventListener("pageshow", watchReturn);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") persistLast();
+    else watchReturn();
+  });
+  document.addEventListener("keydown", () => { human = true; }, true);
+  document.addEventListener("pointerdown", () => {
+    const data = readSnapshot();
+    if (!data || !snapDiffers(data)) human = true;
+  }, true);
+
+  if (location.hash === "#selftest") {
+    clearStored();
+    resetAll();
+    const q = FeeCalc.quote({ party: "vendor", persons: 1, discountPct: 0, sst: false });
+    const emptyOk = price.value === "";
+    const grandOk = $("grand").textContent === "RM 2,290.00";
+    const feeOk = $("feeList").querySelector("input").value === "0.00";
+    const rows = $("feeList").querySelectorAll(".line").length + $("disbList").querySelectorAll(".line").length;
+
+    function typeInto(el, text) {
+      el.focus();
+      el.value = "";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      for (let i = 0; i < text.length; i++) {
+        el.value = el.value + text.charAt(i);
+        try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+    typeInto(price, "2500000");
+    const liveValue = price.value;
+    price.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const blurValue = price.value;
+    const spa = $("feeList").querySelector("input");
+    spa.focus();
+    spa.value = "15000";
+    try { spa.setSelectionRange(5, 5); } catch (err) {}
+    spa.dispatchEvent(new Event("input", { bubbles: true }));
+    const spaValue = spa.value;
+    price.focus();
+    price.value = "1,000";
+    try { price.setSelectionRange(2, 2); } catch (err) {}
+    price.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true }));
+    const backValue = price.value;
+
+    const groupOk = liveValue === "2,500,000" && blurValue === "2,500,000.00" && spaValue === "15,000" && backValue === "0";
+    const today = new Date();
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const expectedName = "Quotation - " + String(today.getDate()).padStart(2, "0") + " " + months[today.getMonth()] + " " + today.getFullYear() + ".pdf";
+    const nameOk = fileName() === expectedName && pdfFile().name === expectedName;
+
+    function wipeLikeIOS() {
+      document.querySelectorAll("input, textarea, select").forEach((el) => {
+        if (el.type === "radio") el.checked = el.value === "vendor";
+        else if (el.type === "checkbox") el.checked = false;
+        else if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else el.value = "";
+      });
+    }
+
+    resetAll();
+    document.querySelector('input[name="party"][value="purchaser"]').checked = true;
+    document.querySelector('input[name="party"][value="purchaser"]').dispatchEvent(new Event("change", { bubbles: true }));
+    typeInto(price, "500000");
+    price.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    sst.checked = true;
+    sst.dispatchEvent(new Event("change", { bubbles: true }));
+    loanOn.checked = true;
+    loanOn.dispatchEvent(new Event("change", { bubbles: true }));
+    typeInto(loanAmount, "200000");
+    loanAmount.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    clientName.value = "Aina";
+    clientName.dispatchEvent(new Event("input", { bubbles: true }));
+    property.value = "Lot 12";
+    property.dispatchEvent(new Event("input", { bubbles: true }));
+    discount.value = "10";
+    discount.dispatchEvent(new Event("change", { bubbles: true }));
+    const beforePrice = price.value;
+    const beforeLoan = loanAmount.value;
+    const beforeGrand = $("grand").textContent;
+    const shaped = beforePrice === "500,000.00" && beforeLoan === "200,000.00" && beforeGrand !== "RM 2,290.00" && $("buyerBlock").hidden === false;
+    wipeLikeIOS();
+    const wiped = price.value === "" && loanAmount.value === "" && clientName.value === "" && !sst.checked && party() === "vendor" && $("grand").textContent === beforeGrand;
+    restoreSnapshot();
+    const restored = price.value === beforePrice && loanAmount.value === beforeLoan && $("grand").textContent === beforeGrand && clientName.value === "Aina" && property.value === "Lot 12" && sst.checked && loanOn.checked && party() === "purchaser" && discount.value === "10" && persons.value === "1" && $("buyerBlock").hidden === false;
+
+    resetAll();
+    typeInto(price, "500000");
+    price.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const vendorGrand = $("grand").textContent === "RM 8,540.00" && price.value === "500,000.00";
+    wipeLikeIOS();
+    const vendorWiped = price.value === "" && $("grand").textContent === "RM 8,540.00";
+    restoreSnapshot();
+    const vendorBack = price.value === "500,000.00" && $("grand").textContent === "RM 8,540.00";
+
+    $("resetBtn").click();
+    const resetOk = price.value === "" && party() === "vendor" && $("grand").textContent === "RM 2,290.00" && !sst.checked;
+    restoreSnapshot();
+    const resetSticks = price.value === "" && $("grand").textContent === "RM 2,290.00" && party() === "vendor";
+    const keepOk = shaped && wiped && restored && vendorGrand && vendorWiped && vendorBack && resetOk && resetSticks;
+
+    document.title = emptyOk && grandOk && feeOk && rows === 15 && q.price == null && q.grandInc === 2290 && groupOk && nameOk && keepOk
+      ? "SELFTEST PASS " + fileName()
+      : "SELFTEST FAIL live=" + liveValue + " blur=" + blurValue + " spa=" + spaValue + " back=" + backValue + " rows=" + rows + " name=" + fileName()
+        + " keep=" + [shaped, wiped, restored, vendorGrand, vendorWiped, vendorBack, resetOk, resetSticks].join("/")
+        + " price=" + price.value + " grand=" + $("grand").textContent;
+  } else {
+    restoreSnapshot();
+  }
+})();
+</script>
+</body>
+</html>
