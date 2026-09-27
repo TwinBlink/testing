@@ -184,6 +184,7 @@ near(v.grandInc, 6515, "vendor grand");
 assert.strictEqual(v.fees.map((row) => row.label).indexOf("Discharge of Charge") >= 0, true);
 assert.strictEqual(v.disb.some((row) => row.label.indexOf("Stamp Duty") === 0), false);
 assert.strictEqual(v.disb[3].excl, null, "ctc dash");
+assert.strictEqual(v.disb[3].label, "Certified True Copy of Title / Carian Rasmi", "ctc label");
 assert.strictEqual(v.feeSst, null, "sst off");
 
 v = q({ price: 338000, sst: true });
@@ -200,6 +201,11 @@ near(v.feeInc, 5052.5, "fees after 10%");
 v = q({ price: 338000, overrides: { spa: 1000 } });
 near(v.fees[0].excl, 1000, "spa override");
 near(v.feeInc, 2250, "fees with override");
+
+v = q({ price: 338000, overrides: { land: null, ctc: 0 } });
+assert.strictEqual(v.disb.find((row) => row.id === "land").excl, null, "blank land");
+assert.strictEqual(v.disb.find((row) => row.id === "ctc").excl, 0, "zero ctc");
+near(v.disbInc, 940, "disb without land");
 
 v = q({ price: 338000, persons: 2 });
 near(v.fees[1].excl, 1000, "ckht 1a two persons");
@@ -247,6 +253,7 @@ assert.ok(raw.indexOf("Vendor") > 0, "pdf party");
 assert.ok(raw.indexOf("Discharge of Charge") > 0, "pdf discharge");
 assert.strictEqual(raw.indexOf("Purchaser"), -1, "vendor pdf has no purchaser");
 assert.ok(raw.indexOf("might varies") > 0, "pdf note wording");
+assert.ok(raw.indexOf("Certified True Copy of Title / Carian Rasmi") > 0, "pdf ctc label");
 
 const buyerPdf = Buffer.from(buildQuotePdf(q({ party: "purchaser", price: 338000, loanOn: true }))).toString("latin1");
 assert.ok(buyerPdf.indexOf("Purchaser") > 0, "purchaser label");

@@ -555,8 +555,8 @@
     let intPart = dot === -1 ? s : s.slice(0, dot);
     const frac = dot === -1 ? null : s.slice(dot + 1).replace(/\./g, "").slice(0, 2);
     intPart = intPart.replace(/^0+(?=\d)/, "");
-    if (frac == null && (intPart === "" || intPart === "0")) return "";
-    if (intPart === "") intPart = "0";
+    if (intPart === "") intPart = frac == null ? "" : "0";
+    if (frac == null && intPart === "") return "";
     const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return frac == null ? grouped : grouped + "." + frac;
   }
@@ -578,11 +578,75 @@
     return text.length;
   }
 
+  let tap = null;
+  let caretToken = 0;
+
+  function measureWidth(el, text) {
+    const mirror = measureWidth.el || (measureWidth.el = document.createElement("span"));
+    if (!mirror.parentNode) {
+      mirror.setAttribute("aria-hidden", "true");
+      mirror.style.position = "absolute";
+      mirror.style.left = "-9999px";
+      mirror.style.top = "0";
+      mirror.style.visibility = "hidden";
+      mirror.style.whiteSpace = "pre";
+      mirror.style.padding = "0";
+      mirror.style.border = "0";
+      document.body.appendChild(mirror);
+    }
+    const cs = getComputedStyle(el);
+    mirror.style.font = cs.font;
+    mirror.style.fontWeight = cs.fontWeight;
+    mirror.style.fontSize = cs.fontSize;
+    mirror.style.fontFamily = cs.fontFamily;
+    mirror.style.fontVariantNumeric = cs.fontVariantNumeric;
+    mirror.style.letterSpacing = cs.letterSpacing;
+    mirror.textContent = String(text);
+    return mirror.getBoundingClientRect().width;
+  }
+
+  function caretIndexAt(el, clientX) {
+    const text = el.value || "";
+    const rect = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    const x = clientX - rect.left - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.paddingLeft) || 0) + (el.scrollLeft || 0);
+    if (!text || !(x > 0)) return 0;
+    const full = measureWidth(el, text);
+    if (x >= full) return text.length;
+    let prev = 0;
+    for (let i = 1; i <= text.length; i++) {
+      const w = measureWidth(el, text.slice(0, i));
+      if (x < (prev + w) / 2) return i - 1;
+      prev = w;
+    }
+    return text.length;
+  }
+
+  function moneyInputFrom(target) {
+    if (!target || !target.closest) return null;
+    if (target.matches && isMoney(target)) return target;
+    const box = target.closest(".money, .box");
+    const input = box ? box.querySelector("input") : null;
+    return isMoney(input) ? input : null;
+  }
+
+  function rememberTap(e) {
+    const input = moneyInputFrom(e.target);
+    if (!input) return;
+    tap = { input: input, x: e.clientX, at: Date.now() };
+  }
+
+  function tapApplies(el) {
+    return !!(tap && tap.input === el && Date.now() - tap.at < 800);
+  }
+
   function placeCaret(el, pos) {
+    const token = ++caretToken;
     el.dataset.caret = String(pos);
     const apply = () => {
+      if (token !== caretToken) return;
       if (document.activeElement !== el) return;
-      const p = Number(el.dataset.caret);
+      const p = Math.min(Number(el.dataset.caret), el.value.length);
       try { el.setSelectionRange(p, p); } catch (err) {}
     };
     apply();
@@ -590,14 +654,39 @@
   }
 
   function snapCaretEnd(el) {
+    const token = ++caretToken;
     const apply = () => {
+      if (token !== caretToken) return;
       if (document.activeElement !== el) return;
       const end = el.value.length;
+      el.dataset.caret = String(end);
       try { el.setSelectionRange(end, end); } catch (err) {}
     };
     apply();
     setTimeout(apply, 0);
     setTimeout(apply, 50);
+  }
+
+  function placeTapCaret(el) {
+    if (!tapApplies(el)) {
+      snapCaretEnd(el);
+      return;
+    }
+    const token = ++caretToken;
+    const x = tap.x;
+    const apply = () => {
+      if (token !== caretToken) return;
+      if (document.activeElement !== el) return;
+      const pos = caretIndexAt(el, x);
+      el.dataset.caret = String(pos);
+      try { el.setSelectionRange(pos, pos); } catch (err) {}
+    };
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 0);
+    setTimeout(apply, 50);
+    setTimeout(apply, 150);
+    setTimeout(apply, 300);
   }
 
   function groupLive(el) {
@@ -614,6 +703,21 @@
     const cents = Math.round(n * 100);
     if (cents % 100 === 0) return groupMoney(String(cents / 100));
     return formatInput(n);
+  }
+
+  function commitLine(t) {
+    const id = t.dataset.id;
+    const blank = t.value.trim() === "";
+    const n = blank ? null : parseMoney(t.value);
+    if (!blank && n == null) return;
+    const trial = Object.assign({}, overrides);
+    delete trial[id];
+    const q = FeeCalc.quote(payload(trial));
+    const row = q.fees.concat(q.disb).find((item) => item.id === id);
+    const auto = row ? row.excl : null;
+    const same = n == null ? auto == null : (auto != null && Math.abs(auto - n) < 0.001);
+    if (same) delete overrides[id];
+    else overrides[id] = n;
   }
 
   function party() {
@@ -915,8 +1019,11 @@
     Object.keys(overrides).forEach((key) => delete overrides[key]);
     const ov = data.overrides && typeof data.overrides === "object" ? data.overrides : {};
     Object.keys(ov).forEach((key) => {
-      const n = Number(ov[key]);
-      if (isFinite(n)) overrides[key] = n;
+      if (ov[key] == null || ov[key] === "") overrides[key] = null;
+      else {
+        const n = Number(ov[key]);
+        if (isFinite(n) && n >= 0) overrides[key] = n;
+      }
     });
     loanTouched = !!data.loanTouched;
     const who = data.party === "purchaser" ? "purchaser" : "vendor";
@@ -1066,14 +1173,12 @@
     if (document.visibilityState === "hidden") return;
     if (recoverIfNeeded()) return;
     const t = e.target;
-    if (isMoney(t)) groupLive(t);
+    if (isMoney(t)) {
+      caretToken++;
+      groupLive(t);
+    }
     if (t.matches && t.matches("[data-id]")) {
-      if (t.value.trim() === "") delete overrides[t.dataset.id];
-      else {
-        const n = parseMoney(t.value);
-        if (n == null) return;
-        overrides[t.dataset.id] = n;
-      }
+      commitLine(t);
       recalc();
       return;
     }
@@ -1090,43 +1195,30 @@
     if (isMoney(t)) {
       const next = toEditing(t.value);
       if (next !== t.value) t.value = next;
-      snapCaretEnd(t);
+      placeTapCaret(t);
     }
     setTimeout(() => t.scrollIntoView({ block: "center", inline: "nearest" }), 280);
   });
 
   document.addEventListener("pointerup", (e) => {
-    const t = e.target;
-    if (!t || !t.closest) return;
-    const wrap = t.closest(".money, .box");
-    const input = t.matches && t.matches("input") && isMoney(t)
-      ? t
-      : (wrap ? wrap.querySelector("input") : null);
-    if (!isMoney(input) || document.activeElement !== input) return;
-    snapCaretEnd(input);
+    const input = moneyInputFrom(e.target);
+    if (!input) return;
+    tap = { input: input, x: e.clientX, at: Date.now() };
+    if (document.activeElement !== input) {
+      input.focus();
+      return;
+    }
+    placeTapCaret(input);
   }, true);
 
   document.body.addEventListener("focusout", (e) => {
     const t = e.target;
     if (isMoney(t)) {
       const shown = parseMoney(t.value);
-      t.value = shown == null || shown === 0 ? "" : formatInput(shown);
+      t.value = shown == null ? "" : formatInput(shown);
       t.defaultValue = t.value;
     }
-    if (t.matches && t.matches("[data-id]")) {
-      if (t.value.trim() === "") delete overrides[t.dataset.id];
-      else {
-        const n = parseMoney(t.value);
-        if (n != null) {
-          const trial = Object.assign({}, overrides);
-          delete trial[t.dataset.id];
-          const q = FeeCalc.quote(payload(trial));
-          const row = q.fees.concat(q.disb).find((item) => item.id === t.dataset.id);
-          if (row && row.excl != null && Math.abs(row.excl - n) < 0.001) delete overrides[t.dataset.id];
-          else overrides[t.dataset.id] = n;
-        }
-      }
-    }
+    if (t.matches && t.matches("[data-id]")) commitLine(t);
     if (t.id === "loanAmount" && t.value.trim() === "") loanTouched = false;
     setTimeout(() => {
       const a = document.activeElement;
@@ -1226,7 +1318,8 @@
     else watchReturn();
   });
   document.addEventListener("keydown", () => { human = true; }, true);
-  document.addEventListener("pointerdown", () => {
+  document.addEventListener("pointerdown", (e) => {
+    rememberTap(e);
     const data = readSnapshot();
     if (!data || !snapDiffers(data)) human = true;
   }, true);
@@ -1272,17 +1365,78 @@
     typeInto(price, "500000");
     price.blur();
     const beforePress = price.value;
-    price.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
-    price.focus();
+    function pressAt(el, x) {
+      const y = el.getBoundingClientRect().top + Math.max(4, el.getBoundingClientRect().height / 2);
+      el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: x, clientY: y }));
+      el.focus();
+      el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: x, clientY: y }));
+    }
+    const priceRect = price.getBoundingClientRect();
+    const priceCs = getComputedStyle(price);
+    const textLeft = priceRect.left + (parseFloat(priceCs.borderLeftWidth) || 0) + (parseFloat(priceCs.paddingLeft) || 0);
+    pressAt(price, textLeft - 12);
+    const frontPos = price.selectionStart;
+    pressAt(price, textLeft + measureWidth(price, "50"));
+    const midPos = price.selectionStart;
+    pressAt(price, priceRect.right - 1);
+    const endPos = price.selectionStart;
     const caretValue = price.value;
-    const caretPos = price.selectionStart;
-    const caretOk = beforePress === "500,000.00" && caretValue === "500,000" && caretPos === caretValue.length;
+    const caretOk = beforePress === "500,000.00" && caretValue === "500,000" && frontPos === 0 && midPos === 2 && endPos === caretValue.length;
+    const landBox = document.querySelector('input[data-id="land"]');
+    const landRect = landBox.getBoundingClientRect();
+    const landCs = getComputedStyle(landBox);
+    const landLeft = landRect.left + (parseFloat(landCs.borderLeftWidth) || 0) + (parseFloat(landCs.paddingLeft) || 0);
+    pressAt(landBox, landLeft + measureWidth(landBox, "1"));
+    const landMid = landBox.selectionStart;
+    const landEditing = landBox.value;
+    pressAt(landBox, landRect.right - 1);
+    const landEnd = landBox.selectionStart;
+    const landCaretOk = landEditing === "100" && landMid === 1 && landEnd === landBox.value.length;
 
-    const groupOk = liveValue === "2,500,000" && blurValue === "2,500,000.00" && spaValue === "15,000" && backValue === "" && caretOk;
+    const groupOk = liveValue === "2,500,000" && blurValue === "2,500,000.00" && spaValue === "15,000" && backValue === "0" && caretOk && landCaretOk;
     const today = new Date();
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const expectedName = "Quotation - " + String(today.getDate()).padStart(2, "0") + " " + months[today.getMonth()] + " " + today.getFullYear() + ".pdf";
     const nameOk = fileName() === expectedName && pdfFile().name === expectedName;
+
+    resetAll();
+    const ctc = document.querySelector('input[data-id="ctc"]');
+    const labelOk = ctc.getAttribute("aria-label") === "Certified True Copy of Title / Carian Rasmi" && ctc.value === "";
+    const land = document.querySelector('input[data-id="land"]');
+    land.focus();
+    land.value = "";
+    land.dispatchEvent(new Event("input", { bubbles: true }));
+    land.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const blankOk = land.value === "" && $("grand").textContent === "RM 2,190.00";
+    land.focus();
+    land.value = "0";
+    land.dispatchEvent(new Event("input", { bubbles: true }));
+    land.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const zeroOk = land.value === "0.00" && $("grand").textContent === "RM 2,190.00";
+    ctc.focus();
+    ctc.value = "0";
+    ctc.dispatchEvent(new Event("input", { bubbles: true }));
+    ctc.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const ctcZeroOk = ctc.value === "0.00" && $("grand").textContent === "RM 2,190.00";
+    price.focus();
+    price.value = "0";
+    price.dispatchEvent(new Event("input", { bubbles: true }));
+    price.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const priceZeroOk = price.value === "0.00";
+    price.focus();
+    price.value = "100000";
+    price.dispatchEvent(new Event("input", { bubbles: true }));
+    price.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    document.querySelector('input[name="party"][value="purchaser"]').checked = true;
+    document.querySelector('input[name="party"][value="purchaser"]').dispatchEvent(new Event("change", { bubbles: true }));
+    loanOn.checked = true;
+    loanOn.dispatchEvent(new Event("change", { bubbles: true }));
+    loanAmount.focus();
+    loanAmount.value = "0";
+    loanAmount.dispatchEvent(new Event("input", { bubbles: true }));
+    loanAmount.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const loanZeroOk = loanAmount.value === "0.00";
+    const entryOk = labelOk && blankOk && zeroOk && ctcZeroOk && priceZeroOk && loanZeroOk;
 
     function wipeLikeIOS() {
       document.querySelectorAll("input, textarea, select").forEach((el) => {
@@ -1336,9 +1490,13 @@
     const resetSticks = price.value === "" && $("grand").textContent === "RM 2,290.00" && party() === "vendor";
     const keepOk = shaped && wiped && restored && vendorGrand && vendorWiped && vendorBack && resetOk && resetSticks;
 
-    document.title = emptyOk && grandOk && feeOk && rows === 15 && q.price == null && q.grandInc === 2290 && groupOk && nameOk && keepOk
+    document.title = emptyOk && grandOk && feeOk && rows === 15 && q.price == null && q.grandInc === 2290 && groupOk && nameOk && entryOk && keepOk
       ? "SELFTEST PASS " + fileName()
-      : "SELFTEST FAIL live=" + liveValue + " blur=" + blurValue + " spa=" + spaValue + " back=" + JSON.stringify(backValue) + " caret=" + caretPos + "/" + caretValue + " rows=" + rows + " name=" + fileName()
+      : "SELFTEST FAIL live=" + liveValue + " blur=" + blurValue + " spa=" + spaValue + " back=" + JSON.stringify(backValue)
+        + " caret=" + frontPos + "/" + midPos + "/" + endPos + "/" + caretValue
+        + " landCaret=" + landMid + "/" + landEnd + "/" + landEditing
+        + " entry=" + [labelOk, blankOk, zeroOk, ctcZeroOk, priceZeroOk, loanZeroOk].join("/")
+        + " rows=" + rows + " name=" + fileName()
         + " keep=" + [shaped, wiped, restored, vendorGrand, vendorWiped, vendorBack, resetOk, resetSticks].join("/")
         + " shaped=" + [beforePrice, beforeLoan, beforeGrand, shapedHidden, shapedParty].join("|")
         + " price=" + price.value + " grand=" + $("grand").textContent;
